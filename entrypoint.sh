@@ -97,8 +97,33 @@ service apache2 restart
 apachectl -t -D DUMP_VHOSTS
 php --version
 
+cat <<EOF > /tmp/api_pull.patch
+*** tools/api_pull.php.orig	Fri Jan 22 18:01:57 2016
+--- tools/api_pull.php	Fri Jan 22 19:19:45 2016
+***************
+*** 1,14 ****
+  <?php
+
+  session_start();
+
+- if(!isset($_SESSION['super']) || $_SESSION['super'] != 1) {
+- 	echo 'Security Failure!';
+- 	exit();
+- }
+-
+  ini_set('display_errors', 'On');
+
+  require('../db.inc.php');
+  require('../api.class.php');
+
+--- 1,9 ----
+EOF
+
+patch /var/www/tripwire/tools/api_pull.php /tmp/api_pull.patch
+cd /var/www/tripwire/tools/
+
 while [[ 1 ]]; do
-    /usr/bin/php /var/www/tripwire/tools/api_pull.php > /dev/null 2>&1
+    /usr/bin/php api_pull.php > /dev/null 2>&1
     for I in {1..180}; do
       sleep 1
     done
